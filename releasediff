@@ -1,5 +1,6 @@
 #!/bin/bash
-# This script executes some commands to get and save original chart manifest to check them with the differences that occured in the meantime !
+# This script executes some commands to figure out drifts 
+# Uses original chart manifest to compare the changes that occured in the meantime !
 # maintainer="serafettin.karatas@kobil.com"
 workdir="/tmp/diff"
 mkdir -p $workdir
