@@ -1,0 +1,49 @@
+λ s -C 'cat /usr/local/bin/releasesdiff'
+#!/bin/bash
+# This script executes some commands to get and save original chart manifest to check them with the differences that occured in the meantime !
+# maintainer="serafettin.karatas@kobil.com"
+workdir="/tmp/diff"
+driftedFiles="/tmp/diff/drifted-$1"
+driftedFileList="/tmp/diff/drifted-list-$1"
+echo "" >$driftedFiles
+echo "" >$driftedFileList
+mkdir -p $workdir
+date=$(date '+%Y-%m-%d_%H-%M-%S')
+printf "%s\n" "***********************************************************************************************************************************************************************"
+helm ls
+printf "%s\n" "***********************************************************************************************************************************************************************"
+for i in $(helm ls | awk '{ print $1 }'); do
+  if [ $i == "NAME" ]; then
+    continue
+  else
+    echo "$i release is exists"
+    printf "%s\n" "... writing $i original helm chart manifest file down"
+    helm get manifest $i > $workdir/$i$date.yaml
+   # $i$date.yam l
+    printf "%s\n" "writing step is completed "
+  fi
+kubectl diff -f $workdir/$i$date.yaml > $workdir/diff_$i$date.yaml
+case  $?  in
+      0)
+          echo "There is no diff. No manual changes! "
+          printf "%s\n" "... seems OK "
+
+          ;;
+      1)
+          echo "There is a diff.So be aware of the manual changes that were done after the helm chart deployment! "
+          printf "%s\n" "In order to get the details of the diff(s) you can reach the file from this location:---> $workdir/diff_$i$date.yaml"
+          echo "$workdir/diff_$i$date.yaml" | tee -a $driftedFiles $driftedFileList
+          cat $workdir/diff_$i$date.yaml | egrep  '(\-  |\+  )' >>$driftedFiles
+          echo "--------------------------------------------------------------------------------------------------------------------------------------------------------------------------" | tee -a $driftedFiles
+          ;;
+
+      *)
+          echo "this indicates an error. No panic but, you should do some examination "
+esac
+done
+echo "##########################################################################################################################################################################"
+echo "||| ---Diff Summary for All Chart Release--- ||| -------------------------------------------------------------------------------------------------------------------------"
+echo "##########################################################################################################################################################################"
+echo "Note1: In order to get the details of the diff(s) you can reach the files from the path which are shown under the /tmp/diff/ "
+echo "Note2: (-) lines indicate the drifts "
+cat $driftedFiles
