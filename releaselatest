@@ -1,0 +1,14 @@
+#!/bin/bash                                                                                                              
+# This script executes some commands to get  the latest version of the releases and check them with the current one!     
+# maintainer="serafettin.karatas@kobil.com"                                                                              
+workdir="/tmp/check"                                                                                                     
+mkdir -p $workdir                                                                                                        
+date=$(date '+%Y-%m-%d_%H-%M-%S')                                                                                        
+currentVersion=$(helm ls | grep $1 |awk '{ print $9 }' | rev | cut -d'-' -f 1 | rev)                                     
+helm repo update                                                                                                         
+latestVersion=$(helm search repo $2/$3 |grep $2/$3 |awk '{ print $2 }')                                                  
+  if [[ "$currentVersion" == "$latestVersion" ]]; then                                                                   
+    echo "true"                                                                                                          
+  else                                                                                                                   
+    echo "false"                                                                                                         
+  fi                                                                                                                     
