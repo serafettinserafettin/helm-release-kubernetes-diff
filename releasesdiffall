@@ -1,4 +1,4 @@
-λ s -C 'cat /usr/local/bin/releasesdiff'
+λ
 #!/bin/bash
 # This script executes some commands to get and save original chart manifest to check them with the differences that occured in the meantime !
 # maintainer="serafettin.karatas@kobil.com"
